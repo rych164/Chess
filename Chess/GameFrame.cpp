@@ -26,6 +26,13 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 		for (int col = 0; col < 8; col++)
 		{
 			wxPanel* areaPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(areaSize, areaSize), wxBORDER_SIMPLE);
+			
+			char coordLetter = 'A' + col;
+			int coordNumber = 8 - row;
+			wxString coordinates = wxString::Format(wxT("%c%d"), coordLetter, coordNumber);
+
+			areaPanel->SetToolTip(coordinates);
+			
 			areaPanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
 			gridSizer->Add(areaPanel, 1, wxEXPAND | wxALL);
 		}
