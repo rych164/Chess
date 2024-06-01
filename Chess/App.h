@@ -1,9 +1,11 @@
 #pragma once
 #include <wx/wx.h>
+#include "MyFrame.h"
 
 class App : public wxApp
 {
 public:
-	bool OnInit();
+	virtual bool OnInit();
 };
+
 

@@ -51,7 +51,9 @@ MyFrame::MyFrame(const wxString& title) :wxFrame(NULL, wxID_ANY, title, wxDefaul
 
 void MyFrame::OnStartNewGame(wxCommandEvent& event)
 {
-	wxMessageBox("Starting New Game");
+	GameFrame* gameFrame = new GameFrame("Game window");
+	gameFrame->Show();
+	this->Hide();
 }
 void MyFrame::OnLoadGame(wxCommandEvent& event)
 {
