@@ -5,6 +5,7 @@
 #include <memory>
 #include "Piece.h"
 #include "Rook.h"
+#include "Knight.h"
 
 class ChessBoard
 {

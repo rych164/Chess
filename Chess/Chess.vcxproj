@@ -23,6 +23,7 @@
     <ClInclude Include="Area.h" />
     <ClInclude Include="ChessBoard.h" />
     <ClInclude Include="GameFrame.h" />
+    <ClInclude Include="Knight.h" />
     <ClInclude Include="MyFrame.h" />
     <ClInclude Include="Piece.h" />
     <ClInclude Include="Player.h" />
@@ -33,6 +34,7 @@
     <ClCompile Include="Area.cpp" />
     <ClCompile Include="ChessBoard.cpp" />
     <ClCompile Include="GameFrame.cpp" />
+    <ClCompile Include="Knight.cpp" />
     <ClCompile Include="MyFrame.cpp" />
     <ClCompile Include="Piece.cpp" />
     <ClCompile Include="Player.cpp" />
