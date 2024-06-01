@@ -24,6 +24,7 @@
     <ClInclude Include="Bishop.h" />
     <ClInclude Include="ChessBoard.h" />
     <ClInclude Include="GameFrame.h" />
+    <ClInclude Include="King.h" />
     <ClInclude Include="Knight.h" />
     <ClInclude Include="MyFrame.h" />
     <ClInclude Include="Piece.h" />
@@ -37,6 +38,7 @@
     <ClCompile Include="Bishop.cpp" />
     <ClCompile Include="ChessBoard.cpp" />
     <ClCompile Include="GameFrame.cpp" />
+    <ClCompile Include="King.cpp" />
     <ClCompile Include="Knight.cpp" />
     <ClCompile Include="MyFrame.cpp" />
     <ClCompile Include="Piece.cpp" />
