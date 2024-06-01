@@ -6,6 +6,7 @@
 #include "Piece.h"
 #include "Rook.h"
 #include "Knight.h"
+#include "Bishop.h"
 
 class ChessBoard
 {
