@@ -1,6 +1,7 @@
 #include "GameFrame.h"
 #include "MyFrame.h"
 #include "Area.h"
+#include "ChessBoard.h"
 
 GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 	: wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxMAXIMIZE), parentFrame(parent) {
@@ -15,23 +16,37 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 
 	vbox->AddSpacer(10);
 
+	ChessBoard chessBoard;
+	chessBoard.setupBoard();
+
+
+
 	wxGridSizer* gridSizer = new wxGridSizer(8, 8, 0, 0);
 
 	int width, height;
 	GetSize(&width, &height);
-	int areaSize = std::min((width - 20) / 8, (height - 70) / 8);
+	int areaSize = std::min((width - 20) / 8, (height - 100) / 8);
 
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
 		{
 			wxPanel* areaPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(areaSize, areaSize), wxBORDER_SIMPLE);
-			
+			Piece* piece = chessBoard.getPieceAt(row, col);
+
 			char coordLetter = 'A' + col;
 			int coordNumber = 8 - row;
 			wxString coordinates = wxString::Format(wxT("%c%d"), coordLetter, coordNumber);
 
-			areaPanel->SetToolTip(coordinates);
+			wxString toolTipText = coordinates;
+			if (piece)
+			{
+				wxString pieceType = piece->isWhite() ? "White" : "Black";
+				pieceType += typeid(*piece).name();
+				toolTipText += " - " + pieceType;
+			}
+
+			areaPanel->SetToolTip(toolTipText);
 			
 			areaPanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
 			gridSizer->Add(areaPanel, 1, wxEXPAND | wxALL);
