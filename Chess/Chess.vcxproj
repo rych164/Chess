@@ -23,6 +23,7 @@
     <ClInclude Include="Area.h" />
     <ClInclude Include="GameFrame.h" />
     <ClInclude Include="MyFrame.h" />
+    <ClInclude Include="Piece.h" />
     <ClInclude Include="Player.h" />
   </ItemGroup>
   <ItemGroup>
@@ -30,6 +31,7 @@
     <ClCompile Include="Area.cpp" />
     <ClCompile Include="GameFrame.cpp" />
     <ClCompile Include="MyFrame.cpp" />
+    <ClCompile Include="Piece.cpp" />
     <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
