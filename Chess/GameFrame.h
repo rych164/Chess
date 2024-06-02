@@ -2,7 +2,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <wx/wx.h>
-#include <wx/grid.h>
 #include <map>
 #include <string>
 
@@ -18,7 +17,7 @@ public:
 
 private:
     MyFrame* parentFrame;
-    std::map<std::string, wxBitmap> LoadPieceImages();
+    std::map<std::string, wxBitmap> LoadPieceImages(int areaSize);
     std::string GetPieceImageName(Piece* piece);
 };
 

@@ -33,8 +33,8 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
     GetSize(&width, &height);
     int areaSize = std::min((width - 20) / 8, (height - 100) / 8);
 
-    // Load piece images
-    std::map<std::string, wxBitmap> pieceImages = LoadPieceImages();
+    // Load piece images and scale them
+    std::map<std::string, wxBitmap> pieceImages = LoadPieceImages(areaSize);
 
     for (int row = 0; row < 8; row++) {
         for (int col = 0; col < 8; col++) {
@@ -82,26 +82,26 @@ void GameFrame::OnSave(wxCommandEvent& event) {
     wxMessageBox("Save function not implemented yet");
 }
 
-std::map<std::string, wxBitmap> GameFrame::LoadPieceImages() {
+std::map<std::string, wxBitmap> GameFrame::LoadPieceImages(int areaSize) {
     std::map<std::string, wxBitmap> pieceImages;
-    pieceImages["white_pawn"] = wxBitmap(wxT("images/white_pawn.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["white_rook"] = wxBitmap(wxT("images/white_rook.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["white_knight"] = wxBitmap(wxT("images/white_knight.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["white_bishop"] = wxBitmap(wxT("images/white_bishop.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["white_queen"] = wxBitmap(wxT("images/white_queen.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["white_king"] = wxBitmap(wxT("images/white_king.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["black_pawn"] = wxBitmap(wxT("images/black_pawn.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["black_rook"] = wxBitmap(wxT("images/black_rook.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["black_knight"] = wxBitmap(wxT("images/black_knight.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["black_bishop"] = wxBitmap(wxT("images/black_bishop.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["black_queen"] = wxBitmap(wxT("images/black_queen.png"), wxBITMAP_TYPE_PNG);
-    pieceImages["black_king"] = wxBitmap(wxT("images/black_king.png"), wxBITMAP_TYPE_PNG);
+    pieceImages["white_pawn"] = wxBitmap(wxImage(wxT("images/white_pawn.png")).Rescale(areaSize, areaSize));
+    pieceImages["white_rook"] = wxBitmap(wxImage(wxT("images/white_rook.png")).Rescale(areaSize, areaSize));
+    pieceImages["white_knight"] = wxBitmap(wxImage(wxT("images/white_knight.png")).Rescale(areaSize, areaSize));
+    pieceImages["white_bishop"] = wxBitmap(wxImage(wxT("images/white_bishop.png")).Rescale(areaSize, areaSize));
+    pieceImages["white_queen"] = wxBitmap(wxImage(wxT("images/white_queen.png")).Rescale(areaSize, areaSize));
+    pieceImages["white_king"] = wxBitmap(wxImage(wxT("images/white_king.png")).Rescale(areaSize, areaSize));
+    pieceImages["black_pawn"] = wxBitmap(wxImage(wxT("images/black_pawn.png")).Rescale(areaSize, areaSize));
+    pieceImages["black_rook"] = wxBitmap(wxImage(wxT("images/black_rook.png")).Rescale(areaSize, areaSize));
+    pieceImages["black_knight"] = wxBitmap(wxImage(wxT("images/black_knight.png")).Rescale(areaSize, areaSize));
+    pieceImages["black_bishop"] = wxBitmap(wxImage(wxT("images/black_bishop.png")).Rescale(areaSize, areaSize));
+    pieceImages["black_queen"] = wxBitmap(wxImage(wxT("images/black_queen.png")).Rescale(areaSize, areaSize));
+    pieceImages["black_king"] = wxBitmap(wxImage(wxT("images/black_king.png")).Rescale(areaSize, areaSize));
     return pieceImages;
 }
 
 std::string GameFrame::GetPieceImageName(Piece* piece) {
     std::string color = piece->isWhite() ? "white" : "black";
-    std::string pieceType = typeid(*piece).name(); // You need to map typeid name to specific piece names if necessary
+    std::string pieceType = typeid(*piece).name();
     if (pieceType == "class Pawn") pieceType = "pawn";
     else if (pieceType == "class Rook") pieceType = "rook";
     else if (pieceType == "class Knight") pieceType = "knight";
