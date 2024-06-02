@@ -20,4 +20,3 @@ private:
     std::map<std::string, wxBitmap> LoadPieceImages(int areaSize);
     std::string GetPieceImageName(Piece* piece);
 };
-

@@ -39,6 +39,11 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
     for (int row = 0; row < 8; row++) {
         for (int col = 0; col < 8; col++) {
             wxPanel* areaPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(areaSize, areaSize), wxBORDER_SIMPLE);
+            areaPanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+
+            wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
+            panelSizer->AddStretchSpacer(1);
+
             Piece* piece = chessBoard.getPieceAt(row, col);
 
             char coordLetter = 'A' + col;
@@ -52,12 +57,15 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
                 toolTipText += " - " + pieceType;
 
                 wxBitmap pieceBitmap = pieceImages[GetPieceImageName(piece)];
-                wxStaticBitmap* pieceImage = new wxStaticBitmap(areaPanel, wxID_ANY, pieceBitmap, wxDefaultPosition, wxSize(areaSize, areaSize));
+                wxStaticBitmap* pieceImage = new wxStaticBitmap(areaPanel, wxID_ANY, pieceBitmap);
+                panelSizer->Add(pieceImage, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
+                panelSizer->AddStretchSpacer(1);
             }
 
             areaPanel->SetToolTip(toolTipText);
+            areaPanel->SetSizer(panelSizer);
 
-            areaPanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
             gridSizer->Add(areaPanel, 1, wxEXPAND | wxALL);
         }
     }
