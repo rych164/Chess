@@ -14,6 +14,7 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
     wxInitAllImageHandlers();
 
     wxPanel* panel = new wxPanel(this, wxID_ANY);
+    wxBoxSizer* mainSizer = new wxBoxSizer(wxHORIZONTAL); // Use horizontal sizer to add log panel
     wxBoxSizer* vbox = new wxBoxSizer(wxVERTICAL);
 
     wxButton* btnBackToMenu = new wxButton(panel, wxID_ANY, wxT("Back To Menu"));
@@ -42,7 +43,6 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
             areaPanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
 
             wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
-            panelSizer->AddStretchSpacer(1);
 
             Piece* piece = chessBoard.getPieceAt(row, col);
 
@@ -58,8 +58,8 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 
                 wxBitmap pieceBitmap = pieceImages[GetPieceImageName(piece)];
                 wxStaticBitmap* pieceImage = new wxStaticBitmap(areaPanel, wxID_ANY, pieceBitmap);
+                panelSizer->AddStretchSpacer(1);
                 panelSizer->Add(pieceImage, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
-
                 panelSizer->AddStretchSpacer(1);
             }
 
@@ -72,7 +72,19 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 
     vbox->Add(gridSizer, 1, wxEXPAND | wxALL, 5);
 
-    panel->SetSizer(vbox);
+    // Set up move log list control
+    wxPanel* logPanel = new wxPanel(panel, wxID_ANY, wxDefaultPosition, wxSize(200, -1));
+    wxBoxSizer* logSizer = new wxBoxSizer(wxVERTICAL);
+    moveLogListCtrl = new wxListCtrl(logPanel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_REPORT | wxLC_SINGLE_SEL);
+    moveLogListCtrl->InsertColumn(0, "Move", wxLIST_FORMAT_LEFT, 200);
+    logSizer->Add(moveLogListCtrl, 1, wxEXPAND | wxALL, 5);
+    logPanel->SetSizer(logSizer);
+
+    // Add vbox and log panel to mainSizer
+    mainSizer->Add(vbox, 1, wxEXPAND | wxALL, 5);
+    mainSizer->Add(logPanel, 0, wxEXPAND | wxALL, 5);
+
+    panel->SetSizer(mainSizer);
     panel->Layout();
 
     btnBackToMenu->Bind(wxEVT_BUTTON, &GameFrame::OnBackToMenu, this);
@@ -117,4 +129,9 @@ std::string GameFrame::GetPieceImageName(Piece* piece) {
     else if (pieceType == "class Queen") pieceType = "queen";
     else if (pieceType == "class King") pieceType = "king";
     return color + "_" + pieceType;
+}
+
+void GameFrame::LogMove(const wxString& move) {
+    long itemIndex = moveLogListCtrl->InsertItem(moveLogListCtrl->GetItemCount(), move);
+    moveLogListCtrl->EnsureVisible(itemIndex);
 }
