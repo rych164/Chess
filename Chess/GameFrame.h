@@ -2,7 +2,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <wx/wx.h>
-class MyFrame;  // Forward declaration.
+#include <wx/grid.h>
+#include <map>
+#include <string>
+
+// Forward declaration.
+class MyFrame;
+class Piece;
 
 class GameFrame : public wxFrame {
 public:
@@ -12,5 +18,7 @@ public:
 
 private:
     MyFrame* parentFrame;
+    std::map<std::string, wxBitmap> LoadPieceImages();
+    std::string GetPieceImageName(Piece* piece);
 };
 
