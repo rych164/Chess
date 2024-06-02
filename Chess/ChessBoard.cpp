@@ -30,6 +30,11 @@ void ChessBoard::setupBoard() {
 	board[0][4] = std::make_unique<King>(false, 0, 4);
 	board[7][4] = std::make_unique<King>(true, 7, 4);
 
+	for (int i = 0; i < 8; i++)
+	{
+		board[1][i] = std::make_unique<Pawn>(false, 1, i, board);
+		board[6][i] = std::make_unique<Pawn>(true, 6, i, board);
+	}
 }
 
 Piece* ChessBoard::getPieceAt(int x, int y) const {
