@@ -140,16 +140,36 @@ void GameFrame::LogMove(const wxString& move) {
 void GameFrame::OnPieceSelected(wxMouseEvent& event) {
     try {
         wxStaticBitmap* pieceImage = dynamic_cast<wxStaticBitmap*>(event.GetEventObject());
-        if (!pieceImage) return;
+        if (!pieceImage) {
+            wxLogError("OnPieceSelected: pieceImage is null.");
+            return;
+        }
 
         wxPanel* selectedPanel = dynamic_cast<wxPanel*>(pieceImage->GetParent());
-        if (!selectedPanel) return;
+        if (!selectedPanel) {
+            wxLogError("OnPieceSelected: selectedPanel is null.");
+            return;
+        }
 
-        wxString tip = selectedPanel->GetToolTip()->GetTip();
-        if (tip.Length() < 2) return;  // Ensure tool tip is of expected format
+        wxToolTip* tooltip = selectedPanel->GetToolTip();
+        if (!tooltip) {
+            wxLogError("OnPieceSelected: tooltip is null.");
+            return;
+        }
+
+        wxString tip = tooltip->GetTip();
+        if (tip.Length() < 2) {
+            wxLogError("OnPieceSelected: ToolTip format is incorrect.");
+            return;
+        }
 
         int row = 8 - (tip[1].GetValue() - '0');
         int col = tip[0].GetValue() - 'A';
+
+        if (row < 0 || row >= 8 || col < 0 || col >= 8) {
+            wxLogError("OnPieceSelected: Coordinates out of bounds.");
+            return;
+        }
 
         Piece* selectedPiece = chessBoard.getPieceAt(row, col);
         if (selectedPiece && selectedPiece->isWhite() == currentPlayer.isWhite()) {
@@ -157,6 +177,9 @@ void GameFrame::OnPieceSelected(wxMouseEvent& event) {
             selectedPiecePanel = selectedPanel;
             selectedPanel->SetBackgroundColour(*wxBLUE); // Highlight the selected piece
             HighlightPossibleMoves(selectedPiece);
+        }
+        else {
+            wxLogError("OnPieceSelected: Selected piece is null or does not match current player's color.");
         }
     }
     catch (const std::exception& e) {
@@ -173,15 +196,24 @@ void GameFrame::HighlightPossibleMoves(Piece* piece) {
 
         for (const auto& move : possibleMoves) {
             int row, col;
-            sscanf(move.c_str(), "Move to (%d,%d)", &row, &col);
-
-            wxString coordinates = wxString::Format(wxT("%c%d"), 'A' + col, 8 - row);
-            wxWindow* window = FindWindowByLabel(coordinates);
-            if (window) {
-                wxPanel* targetPanel = dynamic_cast<wxPanel*>(window->GetParent());
-                if (targetPanel) {
-                    targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
+            if (sscanf(move.c_str(), "Move to (%d,%d)", &row, &col) == 2) {
+                wxString coordinates = wxString::Format(wxT("%c%d"), 'A' + col, 8 - row);
+                wxWindow* window = FindWindowByLabel(coordinates);
+                if (window) {
+                    wxPanel* targetPanel = dynamic_cast<wxPanel*>(window->GetParent());
+                    if (targetPanel) {
+                        targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
+                    }
+                    else {
+                        wxLogError("HighlightPossibleMoves: targetPanel is null.");
+                    }
                 }
+                else {
+                    wxLogError("HighlightPossibleMoves: window is null for coordinates %s.", coordinates);
+                }
+            }
+            else {
+                wxLogError("HighlightPossibleMoves: Failed to parse move coordinates from string '%s'.", move.c_str());
             }
         }
     }
@@ -199,16 +231,31 @@ void GameFrame::ClearHighlights() {
         for (wxWindowList::iterator it = children.begin(); it != children.end(); ++it) {
             wxPanel* panel = dynamic_cast<wxPanel*>(*it);
             if (panel) {
-                wxString tip = panel->GetToolTip()->GetTip();
-                if (tip.Length() >= 2) {
-                    int row = 8 - (tip[1].GetValue() - '0');
-                    int col = tip[0].GetValue() - 'A';
-                    panel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                wxToolTip* tooltip = panel->GetToolTip();
+                if (tooltip) {
+                    wxString tip = tooltip->GetTip();
+                    if (!tip.IsEmpty() && tip.Length() >= 2) {
+                        int row = 8 - (tip[1].GetValue() - '0');
+                        int col = tip[0].GetValue() - 'A';
+                        if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+                            panel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                        }
+                    }
                 }
             }
         }
         if (selectedPiecePanel) {
-            selectedPiecePanel->SetBackgroundColour((selectedPiecePanel->GetToolTip()->GetTip().Contains('A') ? *wxYELLOW : *wxLIGHT_GREY));
+            wxToolTip* tooltip = selectedPiecePanel->GetToolTip();
+            if (tooltip) {
+                wxString tip = tooltip->GetTip();
+                if (!tip.IsEmpty() && tip.Length() >= 2) {
+                    int row = 8 - (tip[1].GetValue() - '0');
+                    int col = tip[0].GetValue() - 'A';
+                    if (row >= 0 && row < 8 && col >= 0 && col < 8) {
+                        selectedPiecePanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                    }
+                }
+            }
             selectedPiecePanel = nullptr;
         }
     }

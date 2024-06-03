@@ -1,5 +1,6 @@
 #include "Pawn.h"
 
+// Constructor initializing the Piece part and setting up a reference to the board
 Pawn::Pawn(bool isWhite, int x, int y, const std::vector<std::vector<std::unique_ptr<Piece>>>* board)
     : Piece(isWhite, x, y)
 {
