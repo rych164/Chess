@@ -1,6 +1,10 @@
 #include "Bishop.h"
 
-Bishop::Bishop(bool isWhite, int x, int y) : Piece(isWhite, x, y) {}
+Bishop::Bishop(bool isWhite, int x, int y, const std::vector<std::vector<std::unique_ptr<Piece>>>* board)
+    : Piece(isWhite, x, y)
+{
+    setBoard(board);
+}
 
 wxArrayString Bishop::getPossibleMoves() const {
     wxArrayString moves;

@@ -1,12 +1,14 @@
 #pragma once
-#define _CRT_SECURE_NO_WARNINGS
 
 #include <wx/wx.h>
 #include <wx/listctrl.h>
 #include <map>
 #include <string>
+#include <memory>
+#include "Player.h"
+#include "ChessBoard.h"
 
-// Forward declaration.
+// Forward declaration
 class MyFrame;
 class Piece;
 
@@ -16,10 +18,18 @@ public:
     void OnBackToMenu(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
     void LogMove(const wxString& move);
+    void OnPieceSelected(wxMouseEvent& event);
 
 private:
     MyFrame* parentFrame;
     wxListCtrl* moveLogListCtrl;
     std::map<std::string, wxBitmap> LoadPieceImages(int areaSize);
     std::string GetPieceImageName(Piece* piece);
+
+    ChessBoard chessBoard;
+    Player currentPlayer;
+    wxPanel* selectedPiecePanel;
+
+    void HighlightPossibleMoves(Piece* piece);
+    void ClearHighlights();
 };

@@ -1,6 +1,10 @@
 #include "Rook.h"
 
-Rook::Rook(bool isWhite, int x, int y) : Piece(isWhite, x, y) {}
+Rook::Rook(bool isWhite, int x, int y, const std::vector<std::vector<std::unique_ptr<Piece>>>* board)
+    : Piece(isWhite, x, y)
+{
+    setBoard(board);
+}
 
 wxArrayString Rook::getPossibleMoves() const {
     wxArrayString moves;

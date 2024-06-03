@@ -1,14 +1,12 @@
 #include "GameFrame.h"
 #include "MyFrame.h"
 #include "Area.h"
-#include "ChessBoard.h"
-#include <map>
 #include <typeinfo>
 #include <wx/mstream.h>  // For memory stream if needed
 #include <wx/image.h>    // For image handler
 
 GameFrame::GameFrame(MyFrame* parent, const wxString& title)
-    : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxMAXIMIZE), parentFrame(parent) {
+    : wxFrame(nullptr, wxID_ANY, title, wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE | wxMAXIMIZE), parentFrame(parent), currentPlayer(true), selectedPiecePanel(nullptr) {
 
     // Initialize the image handlers
     wxInitAllImageHandlers();
@@ -25,7 +23,6 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 
     vbox->AddSpacer(10);
 
-    ChessBoard chessBoard;
     chessBoard.setupBoard();
 
     wxGridSizer* gridSizer = new wxGridSizer(8, 8, 0, 0);
@@ -61,6 +58,8 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
                 panelSizer->AddStretchSpacer(1);
                 panelSizer->Add(pieceImage, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
                 panelSizer->AddStretchSpacer(1);
+
+                pieceImage->Bind(wxEVT_LEFT_DOWN, &GameFrame::OnPieceSelected, this);
             }
 
             areaPanel->SetToolTip(toolTipText);
@@ -89,6 +88,8 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
 
     btnBackToMenu->Bind(wxEVT_BUTTON, &GameFrame::OnBackToMenu, this);
     btnSaveGame->Bind(wxEVT_BUTTON, &GameFrame::OnSave, this);
+
+    LogMove("White's turn");
 
     Maximize(true);
 }
@@ -134,4 +135,87 @@ std::string GameFrame::GetPieceImageName(Piece* piece) {
 void GameFrame::LogMove(const wxString& move) {
     long itemIndex = moveLogListCtrl->InsertItem(moveLogListCtrl->GetItemCount(), move);
     moveLogListCtrl->EnsureVisible(itemIndex);
+}
+
+void GameFrame::OnPieceSelected(wxMouseEvent& event) {
+    try {
+        wxStaticBitmap* pieceImage = dynamic_cast<wxStaticBitmap*>(event.GetEventObject());
+        if (!pieceImage) return;
+
+        wxPanel* selectedPanel = dynamic_cast<wxPanel*>(pieceImage->GetParent());
+        if (!selectedPanel) return;
+
+        wxString tip = selectedPanel->GetToolTip()->GetTip();
+        if (tip.Length() < 2) return;  // Ensure tool tip is of expected format
+
+        int row = 8 - (tip[1].GetValue() - '0');
+        int col = tip[0].GetValue() - 'A';
+
+        Piece* selectedPiece = chessBoard.getPieceAt(row, col);
+        if (selectedPiece && selectedPiece->isWhite() == currentPlayer.isWhite()) {
+            ClearHighlights(); // Clear previous highlights
+            selectedPiecePanel = selectedPanel;
+            selectedPanel->SetBackgroundColour(*wxBLUE); // Highlight the selected piece
+            HighlightPossibleMoves(selectedPiece);
+        }
+    }
+    catch (const std::exception& e) {
+        wxLogError("Exception caught in OnPieceSelected: %s", e.what());
+    }
+    catch (...) {
+        wxLogError("Unknown exception caught in OnPieceSelected.");
+    }
+}
+
+void GameFrame::HighlightPossibleMoves(Piece* piece) {
+    try {
+        wxArrayString possibleMoves = piece->getPossibleMoves();
+
+        for (const auto& move : possibleMoves) {
+            int row, col;
+            sscanf(move.c_str(), "Move to (%d,%d)", &row, &col);
+
+            wxString coordinates = wxString::Format(wxT("%c%d"), 'A' + col, 8 - row);
+            wxWindow* window = FindWindowByLabel(coordinates);
+            if (window) {
+                wxPanel* targetPanel = dynamic_cast<wxPanel*>(window->GetParent());
+                if (targetPanel) {
+                    targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
+                }
+            }
+        }
+    }
+    catch (const std::exception& e) {
+        wxLogError("Exception caught in HighlightPossibleMoves: %s", e.what());
+    }
+    catch (...) {
+        wxLogError("Unknown exception caught in HighlightPossibleMoves.");
+    }
+}
+
+void GameFrame::ClearHighlights() {
+    try {
+        wxWindowList children = this->GetChildren();
+        for (wxWindowList::iterator it = children.begin(); it != children.end(); ++it) {
+            wxPanel* panel = dynamic_cast<wxPanel*>(*it);
+            if (panel) {
+                wxString tip = panel->GetToolTip()->GetTip();
+                if (tip.Length() >= 2) {
+                    int row = 8 - (tip[1].GetValue() - '0');
+                    int col = tip[0].GetValue() - 'A';
+                    panel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                }
+            }
+        }
+        if (selectedPiecePanel) {
+            selectedPiecePanel->SetBackgroundColour((selectedPiecePanel->GetToolTip()->GetTip().Contains('A') ? *wxYELLOW : *wxLIGHT_GREY));
+            selectedPiecePanel = nullptr;
+        }
+    }
+    catch (const std::exception& e) {
+        wxLogError("Exception caught in ClearHighlights: %s", e.what());
+    }
+    catch (...) {
+        wxLogError("Unknown exception caught in ClearHighlights.");
+    }
 }
