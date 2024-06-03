@@ -206,6 +206,7 @@ void GameFrame::HighlightPossibleMoves(Piece* piece) {
                 wxLogDebug("Highlighting possible move area at coordinates: %s", coordinates);
                 wxPanel* targetPanel = panelMap[coordinates];  // Use the map to find the panel
                 if (targetPanel) {
+                    targetPanel->Bind(wxEVT_LEFT_DOWN, &GameFrame::OnMoveSelected, this);
                     targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
                     targetPanel->Refresh();
                     targetPanel->Update();
@@ -269,4 +270,70 @@ wxWindow* GameFrame::FindWindowByLabel(const wxString& label) {
         return it->second;
     }
     return nullptr;
+}
+void GameFrame::OnMoveSelected(wxMouseEvent& event) {
+    wxPanel* movePanel = dynamic_cast<wxPanel*>(event.GetEventObject());
+    if (!movePanel) {
+        wxLogError("Move Panel is null.");
+        return;
+    }
+
+    // Extract the coordinates from the panel's name or tooltip
+    wxString coordinates = movePanel->GetName();
+    int row = 8 - (coordinates[1].GetValue() - '0');
+    int col = coordinates[0].GetValue() - 'A';
+
+    // Now perform the move using these coordinates and the stored selected piece
+    if (selectedPiecePanel && selectedPiecePanel->GetName() != coordinates) {
+        Piece* selectedPiece = chessBoard.getPieceAt(8 - (selectedPiecePanel->GetName()[1].GetValue() - '0'), selectedPiecePanel->GetName()[0].GetValue() - 'A');
+        if (selectedPiece) {
+            selectedPiece->moveTo(row, col);  // Update the internal state
+            UpdateGUIAfterMove(selectedPiecePanel, movePanel); // You need to implement this
+            ClearHighlights();
+            TogglePlayerTurn(); // You need to implement this
+        }
+    }
+}
+void GameFrame::UpdateGUIAfterMove(wxPanel* sourcePanel, wxPanel* destinationPanel) {
+    wxString srcToolTip = sourcePanel->GetToolTip()->GetTip();
+    wxString destToolTip = destinationPanel->GetToolTip()->GetTip();
+
+    // Get coordinates to find pieces
+    int srcRow = 8 - (srcToolTip[1].GetValue() - '0');
+    int srcCol = srcToolTip[0].GetValue() - 'A';
+    int destRow = 8 - (destToolTip[1].GetValue() - '0');
+    int destCol = destToolTip[0].GetValue() - 'A';
+
+    // Get the piece from the source panel
+    Piece* piece = chessBoard.getPieceAt(srcRow, srcCol);
+    if (!piece) {
+        wxLogError("No piece at the source coordinates.");
+        return;
+    }
+
+    // Move the piece in the board data structure
+    chessBoard.movePiece(srcRow, srcCol, destRow, destCol); // This method needs to be implemented in ChessBoard
+
+    // Update the destination panel with the new piece image
+    wxStaticBitmap* sourceImage = dynamic_cast<wxStaticBitmap*>(sourcePanel->GetChildren().front());
+    wxStaticBitmap* destinationImage = new wxStaticBitmap(destinationPanel, wxID_ANY, sourceImage->GetBitmap(), wxDefaultPosition, wxDefaultSize, 0);
+    destinationPanel->GetSizer()->Add(destinationImage, 1, wxEXPAND | wxALL, 0);
+    destinationPanel->Layout();
+
+    // Clear the source panel
+    sourcePanel->DestroyChildren();
+    sourcePanel->SetBackgroundColour((srcRow + srcCol) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+    sourcePanel->Refresh();
+
+    // Log the move
+    wxString moveDescription = wxString::Format("Moved from %c%d to %c%d", 'A' + srcCol, 8 - srcRow, 'A' + destCol, 8 - destRow);
+    LogMove(moveDescription);
+}
+void GameFrame::TogglePlayerTurn() {
+    currentPlayer = !currentPlayer; // Toggle the current player boolean
+    wxString playerColor = currentPlayer ? "White's turn" : "Black's turn";
+    LogMove(playerColor); // Log which player's turn it is now
+
+    // Optionally, update any UI elements that indicate the current player
+    // For example, changing the color of a status bar or a label
 }

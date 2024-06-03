@@ -14,12 +14,11 @@
 class ChessBoard
 {
 public:
-	ChessBoard();
-	void setupBoard();
-	Piece* getPieceAt(int x, int y) const;
+    ChessBoard();
+    void setupBoard();
+    Piece* getPieceAt(int x, int y) const;
+    void movePiece(int srcX, int srcY, int destX, int destY); // Method to move pieces
+
 private:
-	std::vector<std::vector<std::unique_ptr<Piece>>> board;
+    std::vector<std::vector<std::unique_ptr<Piece>>> board;
 };
-
-
-

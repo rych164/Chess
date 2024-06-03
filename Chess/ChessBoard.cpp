@@ -67,3 +67,18 @@ Piece* ChessBoard::getPieceAt(int x, int y) const {
     }
     return board[x][y].get();
 }
+void ChessBoard::movePiece(int srcX, int srcY, int destX, int destY) {
+    if (srcX < 0 || srcX >= 8 || srcY < 0 || srcY >= 8 || destX < 0 || destX >= 8 || destY < 0 || destY >= 8) {
+        wxLogError("movePiece: Invalid board coordinates.");
+        return;
+    }
+
+    // Move the piece
+    board[destX][destY] = std::move(board[srcX][srcY]);
+    board[srcX][srcY].reset();
+
+    // If needed, update the piece's position
+    if (board[destX][destY]) {
+        board[destX][destY]->moveTo(destX, destY);
+    }
+}

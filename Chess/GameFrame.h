@@ -13,11 +13,14 @@ class GameFrame : public wxFrame {
 public:
     GameFrame(MyFrame* parent, const wxString& title);
     void OnPieceSelected(wxMouseEvent& event);
+    void OnMoveSelected(wxMouseEvent& event);
     void OnBackToMenu(wxCommandEvent& event);
     void OnSave(wxCommandEvent& event);
     void LogMove(const wxString& move);
     std::map<std::string, wxBitmap> LoadPieceImages(int areaSize);
     std::string GetPieceImageName(Piece* piece);
+    void UpdateGUIAfterMove(wxPanel* sourcePanel, wxPanel* destinationPanel);
+    void TogglePlayerTurn();
 
 private:
     void HighlightPossibleMoves(Piece* piece);
