@@ -46,6 +46,9 @@ GameFrame::GameFrame(MyFrame* parent, const wxString& title)
             char coordLetter = 'A' + col;
             int coordNumber = 8 - row;
             wxString coordinates = wxString::Format(wxT("%c%d"), coordLetter, coordNumber);
+            areaPanel->SetName(coordinates);  // Ensure each panel is named with its coordinates
+
+            panelMap[coordinates] = areaPanel;  // Add this line to populate the map
 
             wxString toolTipText = coordinates;
             if (piece) {
@@ -172,7 +175,7 @@ void GameFrame::OnPieceSelected(wxMouseEvent& event) {
         }
 
         Piece* selectedPiece = chessBoard.getPieceAt(row, col);
-        if (selectedPiece && selectedPiece->isWhite() == currentPlayer.isWhite()) {
+        if (selectedPiece && selectedPiece->isWhite() == currentPlayer) {
             ClearHighlights(); // Clear previous highlights
             selectedPiecePanel = selectedPanel;
             selectedPanel->SetBackgroundColour(*wxBLUE); // Highlight the selected piece
@@ -200,20 +203,16 @@ void GameFrame::HighlightPossibleMoves(Piece* piece) {
             int row, col;
             if (sscanf(move.c_str(), "Move to (%d,%d)", &row, &col) == 2) {
                 wxString coordinates = wxString::Format(wxT("%c%d"), 'A' + col, 8 - row);
-                wxWindow* window = FindWindowByLabel(coordinates);
-                if (window) {
-                    wxPanel* targetPanel = dynamic_cast<wxPanel*>(window->GetParent());
-                    if (targetPanel) {
-                        targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
-                        targetPanel->Refresh();
-                        targetPanel->Update();
-                    }
-                    else {
-                        wxLogError("HighlightPossibleMoves: targetPanel is null.");
-                    }
+                wxLogDebug("Highlighting possible move area at coordinates: %s", coordinates);
+                wxPanel* targetPanel = panelMap[coordinates];  // Use the map to find the panel
+                if (targetPanel) {
+                    targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
+                    targetPanel->Refresh();
+                    targetPanel->Update();
+                    wxLogDebug("Highlighted panel at row: %d, col: %d", row, col);
                 }
                 else {
-                    wxLogError("HighlightPossibleMoves: window is null for coordinates %s.", coordinates);
+                    wxLogError("HighlightPossibleMoves: targetPanel is null for coordinates %s.", coordinates);
                 }
             }
             else {
@@ -231,38 +230,27 @@ void GameFrame::HighlightPossibleMoves(Piece* piece) {
 
 void GameFrame::ClearHighlights() {
     try {
-        wxWindowList children = this->GetChildren();
-        for (wxWindowList::iterator it = children.begin(); it != children.end(); ++it) {
-            wxPanel* panel = dynamic_cast<wxPanel*>(*it);
+        for (auto& entry : panelMap) {
+            wxPanel* panel = entry.second;
             if (panel) {
-                wxToolTip* tooltip = panel->GetToolTip();
-                if (tooltip) {
-                    wxString tip = tooltip->GetTip();
-                    if (!tip.IsEmpty() && tip.Length() >= 2) {
-                        int row = 8 - (tip[1].GetValue() - '0');
-                        int col = tip[0].GetValue() - 'A';
-                        if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-                            panel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
-                            panel->Refresh();
-                            panel->Update();
-                        }
-                    }
+                wxString tip = panel->GetToolTip()->GetTip();
+                if (!tip.IsEmpty() && tip.Length() >= 2) {
+                    int row = 8 - (tip[1].GetValue() - '0');
+                    int col = tip[0].GetValue() - 'A';
+                    panel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                    panel->Refresh();
+                    panel->Update();
                 }
             }
         }
         if (selectedPiecePanel) {
-            wxToolTip* tooltip = selectedPiecePanel->GetToolTip();
-            if (tooltip) {
-                wxString tip = tooltip->GetTip();
-                if (!tip.IsEmpty() && tip.Length() >= 2) {
-                    int row = 8 - (tip[1].GetValue() - '0');
-                    int col = tip[0].GetValue() - 'A';
-                    if (row >= 0 && row < 8 && col >= 0 && col < 8) {
-                        selectedPiecePanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
-                        selectedPiecePanel->Refresh();
-                        selectedPiecePanel->Update();
-                    }
-                }
+            wxString tip = selectedPiecePanel->GetToolTip()->GetTip();
+            if (!tip.IsEmpty() && tip.Length() >= 2) {
+                int row = 8 - (tip[1].GetValue() - '0');
+                int col = tip[0].GetValue() - 'A';
+                selectedPiecePanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                selectedPiecePanel->Refresh();
+                selectedPiecePanel->Update();
             }
             selectedPiecePanel = nullptr;
         }
@@ -273,4 +261,12 @@ void GameFrame::ClearHighlights() {
     catch (...) {
         wxLogError("Unknown exception caught in ClearHighlights.");
     }
+}
+
+wxWindow* GameFrame::FindWindowByLabel(const wxString& label) {
+    auto it = panelMap.find(label);
+    if (it != panelMap.end()) {
+        return it->second;
+    }
+    return nullptr;
 }
