@@ -2,7 +2,7 @@
 #define GUI_H
 
 #include <wx/wx.h>
-#include <wx/dcbuffer.h>  // Dodaj ten nag³ówek dla wxAutoBufferedPaintDC
+#include <wx/dcbuffer.h>
 #include "chess.h"
 #include "ai.h"
 
@@ -15,11 +15,14 @@ private:
     void OnClick(wxMouseEvent& event);
     void DrawBoard(wxDC& dc);
     void DrawPiece(wxDC& dc, Piece piece, int row, int col);
+    void UpdateLog(const wxString& logMessage);
 
     ChessGame game;
     ChessAI ai;
     Position selectedPosition;
     bool isPieceSelected;
+    int turnNumber;
+    wxTextCtrl* logCtrl;
 
     wxDECLARE_EVENT_TABLE();
 };

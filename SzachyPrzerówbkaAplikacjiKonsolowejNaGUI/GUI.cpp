@@ -6,22 +6,36 @@ EVT_LEFT_DOWN(ChessFrame::OnClick)
 wxEND_EVENT_TABLE()
 
 ChessFrame::ChessFrame(const wxString& title, const wxPoint& pos, const wxSize& size)
-    : wxFrame(nullptr, wxID_ANY, title, pos, size), isPieceSelected(false) {
+    : wxFrame(nullptr, wxID_ANY, title, pos, size), isPieceSelected(false), turnNumber(1) {
     game = ChessGame();
     ai = ChessAI();
     SetBackgroundStyle(wxBG_STYLE_PAINT);
+
+    wxBoxSizer* sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxPanel* boardPanel = new wxPanel(this, wxID_ANY);
+    boardPanel->SetBackgroundStyle(wxBG_STYLE_PAINT);
+    boardPanel->Bind(wxEVT_PAINT, &ChessFrame::OnPaint, this);
+    boardPanel->Bind(wxEVT_LEFT_DOWN, &ChessFrame::OnClick, this);
+
+    logCtrl = new wxTextCtrl(this, wxID_ANY, "", wxDefaultPosition, wxSize(200, 600), wxTE_MULTILINE | wxTE_READONLY);
+
+    sizer->Add(boardPanel, 1, wxEXPAND);
+    sizer->Add(logCtrl, 0, wxEXPAND);
+
+    SetSizerAndFit(sizer);
 }
 
 void ChessFrame::OnPaint(wxPaintEvent& event) {
-    wxAutoBufferedPaintDC dc(this);
-    dc.Clear();
-    DrawBoard(dc);
+    wxPaintDC dc(static_cast<wxWindow*>(event.GetEventObject()));
+    wxAutoBufferedPaintDC bdc(dc.GetWindow());
+    bdc.Clear();
+    DrawBoard(bdc);
 
     for (int row = 0; row < 8; ++row) {
         for (int col = 0; col < 8; ++col) {
             Piece piece = game.board[row][col];
             if (piece.type != PieceType::None) {
-                DrawPiece(dc, piece, row, col);
+                DrawPiece(bdc, piece, row, col);
             }
         }
     }
@@ -55,28 +69,47 @@ void ChessFrame::DrawPiece(wxDC& dc, Piece piece, int row, int col) {
 }
 
 void ChessFrame::OnClick(wxMouseEvent& event) {
+    wxPanel* boardPanel = static_cast<wxPanel*>(event.GetEventObject());
     int col = event.GetX() / 40;
     int row = event.GetY() / 40;
     Position pos = { row, col };
 
     if (isPieceSelected) {
+        Piece piece = game.board[selectedPosition.row][selectedPosition.col];
+        wxString moveInfo;
+        moveInfo.Printf("Turn %d: %s from (%d, %d) to (%d, %d)", turnNumber,
+            piece.type == PieceType::King ? "King" :
+            piece.type == PieceType::Queen ? "Queen" :
+            piece.type == PieceType::Rook ? "Rook" :
+            piece.type == PieceType::Bishop ? "Bishop" :
+            piece.type == PieceType::Knight ? "Knight" :
+            piece.type == PieceType::Pawn ? "Pawn" : "Unknown",
+            selectedPosition.row, selectedPosition.col, pos.row, pos.col);
+
         if (game.movePiece(selectedPosition, pos)) {
-            Refresh();
+            boardPanel->Refresh();
             if (game.isCheckmate()) {
+                moveInfo += " - Checkmate!";
                 wxMessageBox("Checkmate!", "Game Over", wxOK | wxICON_INFORMATION);
             }
             else if (game.isStalemate()) {
+                moveInfo += " - Stalemate!";
                 wxMessageBox("Stalemate!", "Game Over", wxOK | wxICON_INFORMATION);
             }
             else {
                 game.switchPlayer();
+                moveInfo += game.isCheck() ? " - Check!" : "";
+
                 if (game.currentPlayer == Color::Black) {
                     std::pair<Position, Position> aiMove = ai.getBestMove(game);
                     game.movePiece(aiMove.first, aiMove.second);
-                    Refresh();
+                    moveInfo += wxString::Format("\nTurn %d: AI moved from (%d, %d) to (%d, %d)", turnNumber, aiMove.first.row, aiMove.first.col, aiMove.second.row, aiMove.second.col);
+                    boardPanel->Refresh();
                     game.switchPlayer();
                 }
             }
+            turnNumber++;
+            UpdateLog(moveInfo);
         }
         isPieceSelected = false;
     }
@@ -84,4 +117,8 @@ void ChessFrame::OnClick(wxMouseEvent& event) {
         selectedPosition = pos;
         isPieceSelected = true;
     }
+}
+
+void ChessFrame::UpdateLog(const wxString& logMessage) {
+    logCtrl->AppendText(logMessage + "\n");
 }
