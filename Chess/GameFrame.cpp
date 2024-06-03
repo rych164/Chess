@@ -176,6 +176,8 @@ void GameFrame::OnPieceSelected(wxMouseEvent& event) {
             ClearHighlights(); // Clear previous highlights
             selectedPiecePanel = selectedPanel;
             selectedPanel->SetBackgroundColour(*wxBLUE); // Highlight the selected piece
+            selectedPanel->Refresh();
+            selectedPanel->Update();
             HighlightPossibleMoves(selectedPiece);
         }
         else {
@@ -203,6 +205,8 @@ void GameFrame::HighlightPossibleMoves(Piece* piece) {
                     wxPanel* targetPanel = dynamic_cast<wxPanel*>(window->GetParent());
                     if (targetPanel) {
                         targetPanel->SetBackgroundColour(*wxGREEN); // Highlight possible move areas
+                        targetPanel->Refresh();
+                        targetPanel->Update();
                     }
                     else {
                         wxLogError("HighlightPossibleMoves: targetPanel is null.");
@@ -239,6 +243,8 @@ void GameFrame::ClearHighlights() {
                         int col = tip[0].GetValue() - 'A';
                         if (row >= 0 && row < 8 && col >= 0 && col < 8) {
                             panel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                            panel->Refresh();
+                            panel->Update();
                         }
                     }
                 }
@@ -253,6 +259,8 @@ void GameFrame::ClearHighlights() {
                     int col = tip[0].GetValue() - 'A';
                     if (row >= 0 && row < 8 && col >= 0 && col < 8) {
                         selectedPiecePanel->SetBackgroundColour((row + col) % 2 ? *wxLIGHT_GREY : *wxYELLOW);
+                        selectedPiecePanel->Refresh();
+                        selectedPiecePanel->Update();
                     }
                 }
             }
