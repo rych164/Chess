@@ -5,8 +5,7 @@
 class King : public Piece
 {
 public:
-	King(bool isWhite, int x, int y);
+    King(bool isWhite, int x, int y);
 
-	wxArrayString getPossibleMoves() const override;
+    wxArrayString getPossibleMoves() const override;
 };
-

@@ -5,8 +5,7 @@
 class Bishop : public Piece
 {
 public:
-	Bishop(bool isWhite, int x, int y);
+    Bishop(bool isWhite, int x, int y);
 
-	wxArrayString getPossibleMoves() const override;
+    wxArrayString getPossibleMoves() const override;
 };
-

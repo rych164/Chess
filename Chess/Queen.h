@@ -5,8 +5,7 @@
 class Queen : public Piece
 {
 public:
-	Queen(bool isWhite, int x, int y);
+    Queen(bool isWhite, int x, int y);
 
-	wxArrayString getPossibleMoves() const override;
+    wxArrayString getPossibleMoves() const override;
 };
-

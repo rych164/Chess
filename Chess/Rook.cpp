@@ -3,15 +3,24 @@
 Rook::Rook(bool isWhite, int x, int y) : Piece(isWhite, x, y) {}
 
 wxArrayString Rook::getPossibleMoves() const {
-	wxArrayString moves;
-	for (int i = 1; i <= 8; i++)
-	{
-		if (i != posY) {
-			moves.Add(wxString::Format("Move to (%d,%d)", posX, i));
-		}
-		if (i != posX) {
-			moves.Add(wxString::Format("MOv to (%d,%d)", i, posY));
-		}
-	}
-	return moves;
+    wxArrayString moves;
+    const int directions[4][2] = { {1, 0}, {-1, 0}, {0, 1}, {0, -1} };
+
+    for (const auto& dir : directions) {
+        int x = posX;
+        int y = posY;
+        while (true) {
+            x += dir[0];
+            y += dir[1];
+            if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+                break;
+            }
+            moves.Add(wxString::Format("Move to (%d,%d)", x, y));
+            // Check for an obstacle (another piece)
+            if ((*board)[x][y]) {
+                break; // Stop if another piece is encountered
+            }
+        }
+    }
+    return moves;
 }
